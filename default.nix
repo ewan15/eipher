@@ -1,10 +1,14 @@
-{ pkgs ? import <nixpkgs> {} }:
-pkgs.mkShell {
-  # buildInputs is for dependencies you'd need "at run time",
-  # were you to to use nix-build not nix-shell and build whatever you were working on
-  buildInputs = [
-		pkgs.cargo
-		pkgs.rustc
-  ];
+let
+  pkgs =
+    import <nixpkgs> {};
+  rust-toolchain = pkgs.symlinkJoin {
+    name = "rust-toolchain";
+    paths = [pkgs.rustc pkgs.cargo pkgs.rustPlatform.rustcSrc];
+  };
+in with pkgs;
+mkShell {
+  name = "scriptr";
+  buildInputs = [rust-toolchain];
+  RUST_BACKTRACE = 1;
 }
 

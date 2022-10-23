@@ -9,3 +9,5 @@ edition = "2021"
 io-uring = "0.5"
 syscalls = { version = "0.6", default-features = false }
 nix = "0.25.0"
+env_logger = "0.9.1"
+log = "*"

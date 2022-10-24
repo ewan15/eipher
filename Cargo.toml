@@ -11,3 +11,4 @@ syscalls = { version = "0.6", default-features = false }
 nix = "0.25.0"
 env_logger = "0.9.1"
 log = "*"
+libc = "0.2"

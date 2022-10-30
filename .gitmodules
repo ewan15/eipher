@@ -1,0 +1,3 @@
+[submodule "ebains.dev"]
+	path = ebains.dev
+	url = git@github.com:ewan15/ebains.dev.git

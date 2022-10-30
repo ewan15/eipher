@@ -21,7 +21,7 @@ use crate::types::{Readable, Writeable};
 
 
 type ClientFd = u32;
-type BytesRead = u32;
+type BytesRead = i32;
 
 pub enum CompletionQueueMessage {
     ClientConnected(i32),
@@ -93,7 +93,7 @@ pub fn completion_queue(cqe: &mut IoUring) -> CompletionQueueMessage {
     if syscall_ret_value < 0 {
         // This is an error
         let error = nix::errno::Errno::from_i32(-syscall_ret_value);
-        panic!("syscall error: {:?}", error);
+        // panic!("syscall error: {:?}", error);
     }
     let msg_userdata = msg.user_data();
     let client_fd = (msg_userdata >> 32) as u32;
@@ -103,7 +103,7 @@ pub fn completion_queue(cqe: &mut IoUring) -> CompletionQueueMessage {
             CompletionQueueMessage::ClientConnected(syscall_ret_value as i32)
         }
         1 => {
-            CompletionQueueMessage::MessageReceived(client_fd as i32, syscall_ret_value as u32)
+            CompletionQueueMessage::MessageReceived(client_fd as i32, syscall_ret_value)
         }
         2 => {
             CompletionQueueMessage::MessageSent(client_fd as i32)

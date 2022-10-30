@@ -22,6 +22,7 @@ use libc;
 use std::ptr;
 use libc::user;
 use std::rc::Rc;
+use nix::sys::ptrace::cont;
 use crate::client::{Client, RcUnsafeClient};
 use crate::_io_uring::{CompletionQueueMessage, client_accept, client_read, client_send, completion_queue};
 use crate::net::{setup_connection, create_sock_addr};
@@ -78,6 +79,10 @@ fn main() -> io::Result<()> {
                 client_accept(&mut ring, socket_fd)
             }
             CompletionQueueMessage::MessageReceived(client_fd, bytes_read) => unsafe {
+                if bytes_read <= 0 {
+                    log::info!("client disconnected");
+                    continue;
+                }
                 let client = clients.get(&client_fd).unwrap().clone();
                 // let read_buffer = Readable::get_mut_ptr(&mut *client.get());
                 let message = std::str::from_utf8((&*client.get()).get_read_buffer()).unwrap();

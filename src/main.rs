@@ -2,6 +2,7 @@ mod client;
 mod types;
 mod _io_uring;
 mod net;
+mod http_server;
 
 use io_uring::IoUring;
 use std::os::unix::io::AsRawFd;
@@ -24,35 +25,16 @@ use libc::user;
 use std::rc::Rc;
 use nix::sys::ptrace::cont;
 use crate::client::{Client, RcUnsafeClient};
-use crate::_io_uring::{CompletionQueueMessage, client_accept, client_read, client_send, completion_queue};
+use crate::_io_uring::{CompletionQueueMessage, client_accept, client_read, client_send, completion_queue, client_close};
 use crate::net::{setup_connection, create_sock_addr};
 use crate::types::{Readable, Writeable};
-
-const HTTP_MESSAGE: &str =
-"
-HTTP/1.1 200 OK
-Date: Mon, 23 May 2005 22:38:34 GMT
-Content-Type: text/html; charset=UTF-8
-Content-Length: 155
-Last-Modified: Wed, 08 Jan 2003 23:11:55 GMT
-Server: Apache/1.3.3.7 (Unix) (Red-Hat/Linux)
-ETag: \"3f80f-1b6-3e1cb03b\"
-Accept-Ranges: bytes
-Connection: close
-
-<html>
-  <head>
-    <title>Ewan Website</title>
-  </head>
-  <body>
-    <p>Hello. Welcome to my website. Built with io_uring.</p>
-  </body>
-</html>
-";
+use crate::http_server::HttpServer;
 
 fn main() -> io::Result<()> {
     env_logger::init();
     log::info!("starting up");
+
+    let http_server = HttpServer::new();
 
     let mut ring = IoUring::new(8)?;
 
@@ -87,18 +69,24 @@ fn main() -> io::Result<()> {
                 // let read_buffer = Readable::get_mut_ptr(&mut *client.get());
                 let message = std::str::from_utf8((&*client.get()).get_read_buffer()).unwrap();
                 log::info!("client sent: {}", message);
+                let response = http_server.process_message(message);
+
                 let write_buf = (*client.get()).get_write_buffer();
-                let http_message_bytes = HTTP_MESSAGE.as_bytes();
-                for i in 0..HTTP_MESSAGE.len() {
-                    write_buf[i] = http_message_bytes[i];
+
+                if let Ok(http_message) = http_server.process_message(message) {
+                    let http_message_bytes = http_message.as_bytes();
+                    for i in 0..http_message.len() {
+                        write_buf[i] = http_message_bytes[i];
+                    }
+
+                    client_send(&mut ring, client_fd, client.clone(), http_message.len() as u32);
                 }
 
-                client_send(&mut ring, client_fd, client.clone(), HTTP_MESSAGE.len() as u32);
-
                 // Add events to io_uring
-                client_read(&mut ring, client_fd, client.clone());
+                client_close(&mut ring, client_fd, client.clone());
             }
             CompletionQueueMessage::MessageSent(_) => {}
+            CompletionQueueMessage::ClientClosed(_) => {}
         }
     }
 }

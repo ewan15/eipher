@@ -1,7 +1,7 @@
 use syscalls::{Sysno, syscall};
 use nix::sys::socket::AddressFamily::Inet;
 
-const PORT: u16 = 8081;
+const PORT: u16 = 8080;
 
 pub fn setup_connection() -> usize {
     let socket_fd = match unsafe { syscall!(Sysno::socket, Inet, 1, 0) } {

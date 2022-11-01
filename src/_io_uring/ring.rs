@@ -27,6 +27,7 @@ pub enum CompletionQueueMessage {
     ClientConnected(i32),
     MessageReceived(i32, BytesRead),
     MessageSent(i32),
+    ClientClosed(i32),
 }
 
 pub fn client_accept(sqe: &mut IoUring, socket_fd: usize) {
@@ -86,6 +87,27 @@ where
     }
 }
 
+pub unsafe fn client_close<T>
+(sqe: &mut IoUring, socket_fd: i32, buffer: Rc<UnsafeCell<T>>)
+    where
+        T: Readable,
+{
+    let user_data: u64 = ((socket_fd as u64) << 32) | (3 as u64);
+    let read = opcode::Close::new(types::Fd(socket_fd))
+        .build()
+        .user_data(user_data);
+
+    unsafe {
+        let raw_ptr = Rc::into_raw(buffer);
+        Rc::increment_strong_count(raw_ptr);
+        sqe
+            .submission()
+            .push(&read)
+            .expect("submission queue is full");
+    }
+}
+
+
 pub fn completion_queue(cqe: &mut IoUring) -> CompletionQueueMessage {
     let msg = cqe.completion().next().expect("completion queue is empty");
 
@@ -107,6 +129,9 @@ pub fn completion_queue(cqe: &mut IoUring) -> CompletionQueueMessage {
         }
         2 => {
             CompletionQueueMessage::MessageSent(client_fd as i32)
+        }
+        3 => {
+            CompletionQueueMessage::ClientClosed(client_fd as i32)
         }
         _ => panic!("help me")
     }

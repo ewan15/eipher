@@ -1,2 +1,9 @@
 # Eipher
-A http server writen in rust using io_uring
+A http server writen in rust using io_uring.
+
+## Docker
+To build a docker image run:
+```
+nix build .#docker
+```
+

@@ -76,10 +76,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                     continue;
                 }
                 let client = clients.get(&client_fd).unwrap().clone();
-                // let read_buffer = Readable::get_mut_ptr(&mut *client.get());
-                let message = std::str::from_utf8((&*client.get()).get_read_buffer()).unwrap();
+                let message = std::str::from_utf8((&*client.get()).get_read_buffer());
+                if message.is_err() {
+                    continue;
+                }
+                let message = message.unwrap();
                 log::info!("client sent: {}", message);
-                let response = http_server.process_message(message);
 
                 let write_buf = (*client.get()).get_write_buffer();
 

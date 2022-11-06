@@ -158,10 +158,6 @@ impl HttpServer {
         }
     }
 
-    pub async fn run(&self) {
-
-    }
-
     pub fn process_message(&self, http_message: &str) -> Result<String, HttpError> {
         let mut message_iterator = http_message.split('\n');
         let request_query = message_iterator.next().ok_or(HttpError::UnableToParseMessage())?;

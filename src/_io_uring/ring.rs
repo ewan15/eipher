@@ -20,7 +20,6 @@ use std::rc::Rc;
 use crate::types::{Readable, Writeable};
 
 
-type ClientFd = u32;
 type BytesRead = i32;
 
 pub enum CompletionQueueMessage {
@@ -57,14 +56,12 @@ pub unsafe fn client_read<T>
         .build()
         .user_data(user_data);
 
-    unsafe {
-        let raw_ptr = Rc::into_raw(buffer);
-        Rc::increment_strong_count(raw_ptr);
-        sqe
-            .submission()
-            .push(&read)
-            .expect("submission queue is full");
-    }
+    let raw_ptr = Rc::into_raw(buffer);
+    Rc::increment_strong_count(raw_ptr);
+    sqe
+        .submission()
+        .push(&read)
+        .expect("submission queue is full");
 }
 
 pub unsafe fn client_send<T>(sqe: &mut IoUring, socket_fd: i32, buffer: Rc<UnsafeCell<T>>, len: u32)
@@ -77,14 +74,12 @@ where
         .build()
         .user_data(user_data);
 
-    unsafe {
         let raw_ptr = Rc::into_raw(buffer);
         Rc::increment_strong_count(raw_ptr);
         sqe
             .submission()
             .push(&send)
             .expect("submission queue is full");
-    }
 }
 
 pub unsafe fn client_close<T>
@@ -97,14 +92,12 @@ pub unsafe fn client_close<T>
         .build()
         .user_data(user_data);
 
-    unsafe {
         let raw_ptr = Rc::into_raw(buffer);
         Rc::increment_strong_count(raw_ptr);
         sqe
             .submission()
             .push(&read)
             .expect("submission queue is full");
-    }
 }
 
 

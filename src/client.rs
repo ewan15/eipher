@@ -20,14 +20,6 @@ impl Client {
         }
     }
 
-    pub fn handle_message() {
-
-    }
-
-    fn decode_message() {
-
-    }
-
     pub(crate) fn get_read_buffer(&self) -> &[u8] {
         self.read_buffer.as_slice()
     }

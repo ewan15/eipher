@@ -1,15 +1,16 @@
+use std::str::FromStr;
 use syscalls::{Sysno, syscall};
 use nix::sys::socket::AddressFamily::Inet;
+use crate::config;
+use config::Host;
 
-const PORT: u16 = 8080;
-
-pub fn setup_connection() -> usize {
+pub fn setup_connection(host: &Host) -> usize {
     let socket_fd = match unsafe { syscall!(Sysno::socket, Inet, 1, 0) } {
         Ok(fd) => fd,
         Err(err) => panic!("unable to get socket"),
     };
 
-    let socket_addr = create_sock_addr();
+    let socket_addr = create_sock_addr(&host);
 
     match unsafe { syscall!(Sysno::bind, socket_fd, (&socket_addr as *const _), 16) } {
         Ok(0) => 0,
@@ -24,6 +25,7 @@ pub fn setup_connection() -> usize {
     socket_fd
 }
 
-pub fn create_sock_addr() -> std::net::SocketAddrV4 {
-    std::net::SocketAddrV4::new(std::net::Ipv4Addr::new(127, 0, 0, 1), PORT)
+pub fn create_sock_addr(host: &Host) -> std::net::SocketAddrV4 {
+    let ip = std::net::Ipv4Addr::from_str(&*host.hostname).expect("unable to parse hostname");
+    std::net::SocketAddrV4::new(ip, host.port)
 }

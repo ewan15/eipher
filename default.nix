@@ -1,14 +1,9 @@
 let
-  pkgs =
-    import <nixpkgs> {};
-  rust-toolchain = pkgs.symlinkJoin {
-    name = "rust-toolchain";
-    paths = [pkgs.rustc pkgs.cargo pkgs.rustPlatform.rustcSrc];
-  };
-in with pkgs;
-mkShell {
+  moz_overlay = import (builtins.fetchTarball https://github.com/mozilla/nixpkgs-mozilla/archive/master.tar.gz);
+  nixpkgs = import <nixpkgs> { overlays = [ moz_overlay ]; };
+in
+nixpkgs.mkShell {
   name = "scriptr";
-  buildInputs = [rust-toolchain];
+  buildInputs = [ (nixpkgs.rustChannelOf { rustToolchain = ./rust-toolchain; }).rust ];
   RUST_BACKTRACE = 1;
 }
-

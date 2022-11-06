@@ -3,12 +3,15 @@ mod types;
 mod _io_uring;
 mod net;
 mod http_server;
+mod config;
+mod cli;
 
 use io_uring::IoUring;
 use std::os::unix::io::AsRawFd;
 use std::{fs, io};
 use std::cell::UnsafeCell;
 use std::collections::HashMap;
+use std::error::Error;
 use std::hash::Hash;
 use std::io::Write;
 use syscalls::{Sysno, syscall};
@@ -29,10 +32,17 @@ use crate::_io_uring::{CompletionQueueMessage, client_accept, client_read, clien
 use crate::net::{setup_connection, create_sock_addr};
 use crate::types::{Readable, Writeable};
 use crate::http_server::HttpServer;
+use crate::cli::Cli;
+use clap::Parser;
+use config::Config;
 
-fn main() -> io::Result<()> {
+fn main() -> Result<(), Box<dyn Error>> {
     env_logger::init();
     log::info!("starting up");
+
+    let args = Cli::parse();
+    log::info!("reading config from: {}", args.config_file);
+    let config = Config::new_from_ini_file(args.config_file)?;
 
     let http_server = HttpServer::new();
 
@@ -40,10 +50,10 @@ fn main() -> io::Result<()> {
 
     let mut clients: HashMap<i32, RcUnsafeClient> = HashMap::new();
 
-    let socket_fd = setup_connection();
+    let socket_fd = setup_connection(&config.host);
     log::debug!("socket_fd: {}", socket_fd);
 
-    let socket = create_sock_addr();
+    let socket = create_sock_addr(&config.host);
     client_accept(&mut ring, socket_fd);
 
     loop {

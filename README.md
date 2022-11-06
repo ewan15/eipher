@@ -7,3 +7,7 @@ To build a docker image run:
 nix build .#docker
 ```
 
+## Usage
+```
+./eipher --config main.ini
+```

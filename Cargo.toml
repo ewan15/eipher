@@ -12,3 +12,5 @@ nix = "0.25.0"
 env_logger = "0.9.1"
 log = "*"
 libc = "0.2"
+configparser = "*"
+clap = { version = "4.0", features = ["derive"] }

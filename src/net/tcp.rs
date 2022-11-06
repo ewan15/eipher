@@ -7,10 +7,10 @@ use config::Host;
 pub fn setup_connection(host: &Host) -> usize {
     let socket_fd = match unsafe { syscall!(Sysno::socket, Inet, 1, 0) } {
         Ok(fd) => fd,
-        Err(err) => panic!("unable to get socket"),
+        Err(_err) => panic!("unable to get socket"),
     };
 
-    let socket_addr = create_sock_addr(&host);
+    let socket_addr = create_sock_addr(host);
 
     match unsafe { syscall!(Sysno::bind, socket_fd, (&socket_addr as *const _), 16) } {
         Ok(0) => 0,

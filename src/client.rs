@@ -1,6 +1,6 @@
 use std::cell::UnsafeCell;
 use std::rc::Rc;
-use libc::wchar_t;
+
 use crate::types::{Readable, Writeable};
 
 pub const BUFFER_SIZE: usize = 10240;

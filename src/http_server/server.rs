@@ -163,11 +163,11 @@ impl HttpServer {
     }
 
     pub fn process_message(&self, http_message: &str) -> Result<String, HttpError> {
-        let mut message_iterator = http_message.split("\n");
+        let mut message_iterator = http_message.split('\n');
         let request_query = message_iterator.next().ok_or(HttpError::UnableToParseMessage())?;
 
-        let mut request_query_iterator = request_query.split(" ");
-        let request_type = request_query_iterator.next().ok_or(HttpError::UnableToParseMessage())?;
+        let mut request_query_iterator = request_query.split(' ');
+        let _request_type = request_query_iterator.next().ok_or(HttpError::UnableToParseMessage())?;
         let path = request_query_iterator.next().ok_or(HttpError::UnableToParseMessage())?;
 
         debug!("requesting path: {}", path);

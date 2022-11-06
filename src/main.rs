@@ -7,30 +7,30 @@ mod config;
 mod cli;
 
 use io_uring::IoUring;
-use std::os::unix::io::AsRawFd;
-use std::{fs, io};
+
+
 use std::cell::UnsafeCell;
 use std::collections::HashMap;
 use std::error::Error;
-use std::hash::Hash;
-use std::io::Write;
-use syscalls::{Sysno, syscall};
-use nix::sys::socket::AddressFamily::Inet;
-use nix::sys::socket::SockAddr;
-use nix::sys::socket::InetAddr;
+
+
+
+
+
+
 use nix::sys::socket::SockaddrLike;
-use nix::sys::socket::sockaddr;
-use std::mem;
-use nix::libc::socklen_t;
-use libc;
-use std::ptr;
-use libc::user;
+
+
+
+
+
+
 use std::rc::Rc;
-use nix::sys::ptrace::cont;
+
 use crate::client::{Client, RcUnsafeClient};
 use crate::_io_uring::{CompletionQueueMessage, client_accept, client_read, client_send, completion_queue, client_close};
 use crate::net::{setup_connection, create_sock_addr};
-use crate::types::{Readable, Writeable};
+
 use crate::http_server::HttpServer;
 use crate::cli::Cli;
 use clap::Parser;
@@ -53,7 +53,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let socket_fd = setup_connection(&config.host);
     log::debug!("socket_fd: {}", socket_fd);
 
-    let socket = create_sock_addr(&config.host);
+    let _socket = create_sock_addr(&config.host);
     client_accept(&mut ring, socket_fd);
 
     loop {

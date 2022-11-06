@@ -1,8 +1,8 @@
-use std::str::FromStr;
-use syscalls::{Sysno, syscall};
-use nix::sys::socket::AddressFamily::Inet;
 use crate::config;
 use config::Host;
+use nix::sys::socket::AddressFamily::Inet;
+use std::str::FromStr;
+use syscalls::{syscall, Sysno};
 
 pub fn setup_connection(host: &Host) -> usize {
     let socket_fd = match unsafe { syscall!(Sysno::socket, Inet, 1, 0) } {
@@ -19,7 +19,7 @@ pub fn setup_connection(host: &Host) -> usize {
 
     match unsafe { syscall!(Sysno::listen, socket_fd, 10) } {
         Ok(0) => (),
-        _ => panic!("unable to listen")
+        _ => panic!("unable to listen"),
     }
 
     socket_fd

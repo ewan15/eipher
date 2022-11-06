@@ -14,7 +14,7 @@ pub type RcUnsafeClient = Rc<UnsafeCell<Client>>;
 
 impl Client {
     pub fn new() -> Self {
-        Self{
+        Self {
             read_buffer: vec![0; BUFFER_SIZE],
             write_buffer: vec![0; BUFFER_SIZE],
         }

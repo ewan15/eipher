@@ -1,3 +1,3 @@
 mod tcp;
 
-pub use tcp::{setup_connection, create_sock_addr};
+pub use tcp::{create_sock_addr, setup_connection};

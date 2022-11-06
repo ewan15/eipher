@@ -1,37 +1,27 @@
-mod client;
-mod types;
 mod _io_uring;
-mod net;
-mod http_server;
-mod config;
 mod cli;
+mod client;
+mod config;
+mod http_server;
+mod net;
+mod types;
 
 use io_uring::IoUring;
-
 
 use std::cell::UnsafeCell;
 use std::collections::HashMap;
 use std::error::Error;
 
-
-
-
-
-
-
-
-
-
-
-
 use std::rc::Rc;
 
+use crate::_io_uring::{
+    client_accept, client_close, client_read, client_send, completion_queue, CompletionQueueMessage,
+};
 use crate::client::{Client, RcUnsafeClient};
-use crate::_io_uring::{CompletionQueueMessage, client_accept, client_read, client_send, completion_queue, client_close};
-use crate::net::{setup_connection, create_sock_addr};
+use crate::net::{create_sock_addr, setup_connection};
 
-use crate::http_server::HttpServer;
 use crate::cli::Cli;
+use crate::http_server::HttpServer;
 use clap::Parser;
 use config::Config;
 
@@ -68,7 +58,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                 // allow for more clients to be connected
                 client_accept(&mut ring, socket_fd)
-            }
+            },
             CompletionQueueMessage::MessageReceived(client_fd, bytes_read) => unsafe {
                 if bytes_read <= 0 {
                     log::info!("client disconnected");
@@ -90,12 +80,17 @@ fn main() -> Result<(), Box<dyn Error>> {
                         write_buf[i] = http_message_bytes[i];
                     }
 
-                    client_send(&mut ring, client_fd, client.clone(), http_message.len() as u32);
+                    client_send(
+                        &mut ring,
+                        client_fd,
+                        client.clone(),
+                        http_message.len() as u32,
+                    );
                 }
 
                 // Add events to io_uring
                 client_close(&mut ring, client_fd, client.clone());
-            }
+            },
             CompletionQueueMessage::MessageSent(_) => {}
             CompletionQueueMessage::ClientClosed(_) => {}
         }

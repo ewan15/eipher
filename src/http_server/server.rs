@@ -42,8 +42,7 @@ Contact: ewan.bains@gmail.com
 </html>
 ";
 
-const HTTP_MESSAGE_STYLE: &str =
-"
+const HTTP_MESSAGE_STYLE: &str = "
 HTTP/1.1 200 OK
 Date: Mon, 23 May 2005 22:38:34 GMT
 Content-Type: text/css; charset=UTF-8
@@ -119,9 +118,7 @@ p {
 
 ";
 
-
-const HTTP_MESSAGE2: &str =
-    "
+const HTTP_MESSAGE2: &str = "
 HTTP/1.1 200 OK
 Date: Mon, 23 May 2005 22:38:34 GMT
 Content-Type: text/html; charset=UTF-8
@@ -142,29 +139,30 @@ Connection: close
 </html>
 ";
 
-
 pub enum HttpError {
-    UnableToParseMessage()
+    UnableToParseMessage(),
 }
 
-pub struct HttpServer {
-
-}
+pub struct HttpServer {}
 
 impl HttpServer {
     pub fn new() -> Self {
-        Self {
-
-        }
+        Self {}
     }
 
     pub fn process_message(&self, http_message: &str) -> Result<String, HttpError> {
         let mut message_iterator = http_message.split('\n');
-        let request_query = message_iterator.next().ok_or(HttpError::UnableToParseMessage())?;
+        let request_query = message_iterator
+            .next()
+            .ok_or(HttpError::UnableToParseMessage())?;
 
         let mut request_query_iterator = request_query.split(' ');
-        let _request_type = request_query_iterator.next().ok_or(HttpError::UnableToParseMessage())?;
-        let path = request_query_iterator.next().ok_or(HttpError::UnableToParseMessage())?;
+        let _request_type = request_query_iterator
+            .next()
+            .ok_or(HttpError::UnableToParseMessage())?;
+        let path = request_query_iterator
+            .next()
+            .ok_or(HttpError::UnableToParseMessage())?;
 
         debug!("requesting path: {}", path);
         if path == "/" {
